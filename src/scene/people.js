@@ -212,8 +212,10 @@ const SLK = { fur: 'wood1', fur2: 'grey1', back: 'wood4', face: 'cream' };
 /** Three-toed sloth hanging by four hooked claws under a branch, belly toward the branch. Faces +z. The mould's gold veins are a separate, animated material. */
 export function makeSloth() {
   const root = new THREE.Group(), g = J(root, 0, 0, 0);
-  sph(g, 0.3, M(SLK.fur), 0, 0, 0, [1, 0.82, 1.75], 12, 9); sph(g, 0.26, M(SLK.back), 0, -0.12, -0.05, [1.0, 0.55, 1.6], 10, 7);
-  for (let i = 0; i < 16; i++) { const a = hash2(i) * TAU, z = (hash2(i + 9) - 0.5) * 0.9; sph(g, 0.06 + 0.04 * hash2(i + 3), M(i % 3 ? 'green2' : 'lime'), Math.cos(a) * 0.27, -0.05 + Math.sin(a) * 0.2, z, [1.3, 0.7, 1.2], 5, 4); }          // algae and moss in the fur
+  // fur in distinct patches: a grey rump, a brown middle, golden shoulders and a tan chest, with a dark dorsal stripe and a few flat algae patches
+  for (const [z, c, r] of [[-0.4, 'grey1', 0.26], [-0.14, 'wood2', 0.3], [0.13, 'mustard', 0.3], [0.38, 'wood1', 0.27]]) sph(g, r, M(c), 0, 0, z, [1, 0.84, 0.95], 11, 8);
+  sph(g, 0.2, M('wood5'), 0, -0.17, -0.02, [0.9, 0.5, 2.3], 9, 6);
+  for (const [x, y, z] of [[-0.2, -0.12, -0.3], [0.2, -0.14, 0.05], [-0.18, -0.1, 0.3]]) sph(g, 0.07, M('lime'), x, y, z, [1.3, 0.45, 1.4], 6, 4);
   const veinMat = new THREE.MeshBasicMaterial({ color: P.gold, transparent: true, opacity: 0.95 }); const veins = new THREE.Group(); g.add(veins);
   const vein = (x0, y0, z0, x1, y1, z1) => { const A = new THREE.Vector3(x0, y0, z0), B = new THREE.Vector3(x1, y1, z1), len = A.distanceTo(B), m = new THREE.Mesh(new THREE.BoxGeometry(0.022, len, 0.022), veinMat); m.position.copy(A).add(B).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize()); veins.add(m); };
   for (const s of [-1, 1]) { vein(s * 0.3, -0.05, -0.3, s * 0.31, -0.1, 0.0); vein(s * 0.31, -0.1, 0.0, s * 0.28, -0.04, 0.35); vein(s * 0.31, -0.1, 0.0, s * 0.3, -0.25, 0.12); vein(s * 0.3, -0.05, -0.3, s * 0.27, -0.2, -0.5); vein(s * 0.28, -0.04, 0.35, s * 0.2, -0.2, 0.5); vein(s * 0.3, -0.25, 0.12, s * 0.22, -0.32, 0.3); }
@@ -223,7 +225,7 @@ export function makeSloth() {
   for (const s of [-1, 1]) { box(head, 0.05, 0.12, 0.03, M('ink'), s * 0.065, 0.01, 0.15, [0, 0, s * 0.45]); sph(head, 0.018, M('black'), s * 0.055, 0.02, 0.165, [1, 1, 0.5], 5, 4); } sph(head, 0.03, M('ink'), 0, -0.04, 0.18, [1.3, 1, 0.8], 5, 4); box(head, 0.1, 0.012, 0.02, M('wood4'), 0, -0.085, 0.16, [0, 0, 0.05]);
   const jaw = J(head, 0, -0.08, 0.1); box(jaw, 0.08, 0.016, 0.06, M('wood3'), 0, 0, 0.03);
   // four limbs reaching up to the branch (y +0.5 above the body); claws hook over it
-  const arms = [[-0.23, 0.32], [0.23, 0.32], [-0.23, -0.34], [0.23, -0.34]].map(([x, z], i) => { const sh = J(g, x, 0.22, z), el = J(sh, 0, 0.0, 0); limb(el, 0.22, 0.05, M(SLK.fur)); el.rotation.x = Math.PI; sh.position.y = 0.22; const wr = J(el, 0, -0.22, 0); for (const c of [-1, 0, 1]) { box(wr, 0.022, 0.13, 0.022, M('cream'), c * 0.04, -0.03, 0, [0, 0, -c * 0.1]); } void i; return { sh, el, wr }; });
+  const arms = [[-0.23, 0.32], [0.23, 0.32], [-0.23, -0.34], [0.23, -0.34]].map(([x, z], i) => { const sh = J(g, x, 0.22, z), el = J(sh, 0, 0.0, 0); limb(el, 0.22, 0.055, M(i < 2 ? 'mustard' : 'wood2')); el.rotation.x = Math.PI; sh.position.y = 0.22; const wr = J(el, 0, -0.22, 0); for (const c of [-1, 0, 1]) { box(wr, 0.02, 0.09, 0.02, M('wood5'), c * 0.035, -0.03, 0, [0, 0, -c * 0.12]); } void i; return { sh, el, wr }; });
   const shadow = contactShadow(0.4); shadow.visible = false; root.add(shadow);
   return { root, g, neck, head, jaw, arms, veins, veinMat };
 }

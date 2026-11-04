@@ -24,20 +24,20 @@ export function createStage(scene, parts, lights) {
   const beetle = makeBeetle(); root.add(beetle.root);
   const gBeetle = makeBeetle(); ghostify(gBeetle.root); root.add(gBeetle.root); gBeetle.root.scale.setScalar(2.1);
   const gBranch = ghostify(new THREE.Group()); { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.24, 3.2, 8), ghostMat); m.rotation.z = PI / 2; gBranch.add(m); } root.add(gBranch);
-  const HIT = V(-0.04, 4.86, -2.27), G = 1.17;
+  const HIT = V(3.25, 4.79, -2.12), G = 1.26;
   // ======================================================= the eagle
   const eagle = makeEagle(); root.add(eagle.root);
-  const EA = parts.perch.clone().add(V(0, 0.42, 0)), EB = V(2.2, 3.7, -1.3), GR = V(-4.0, 0.55, -0.3), OUT = V(-14, 12.5, -9);
+  const EA = parts.perch.clone().add(V(0, 0.42, 0)), EB = V(2.2, 3.7, -1.3), GR = V(6.4, 0.55, 0.2), OUT = V(17, 12.5, -9);
   const dive = (u, out) => out.copy(EA).lerp(EB, Math.pow(u, 1.15));
   const eagleState = (t) => {
-    const s = { pos: EA.clone(), yaw: 1.16, pitch: 0, roll: 0, flap: 0, fold: 1, vis: true, head: 0, tumble: 0 };
+    const EY = Math.atan2(EB.x - EA.x, EB.z - EA.z), s = { pos: EA.clone(), yaw: EY, pitch: 0, roll: 0, flap: 0, fold: 1, vis: true, head: 0, tumble: 0 };
     if (t < T.takeoff) { const lk = bump(t, T.eagleLook - 2, T.eagleLook, T.takeoff - 0.2, T.takeoff); s.head = lk; s.pos.y += -0.05 * bump(t, T.takeoff - 1.5, T.takeoff - 0.5, T.takeoff - 0.2, T.takeoff); }
     else if (t < T.hit) { const u = (t - T.takeoff) / (T.impact + 0.8 - T.takeoff); dive(u, s.pos); s.yaw = Math.atan2(EB.x - EA.x, EB.z - EA.z); s.pitch = 0.55 * smooth((t - T.takeoff) / 1.2); s.fold = smooth((t - T.takeoff) / 1.5); s.flap = (1 - s.fold) * 1.0; }
-    else if (t < T.eagleGround) { const hp = dive((T.hit - T.takeoff) / (T.impact + 0.8 - T.takeoff), V(0, 0, 0)), tau = (t - T.hit) / (T.eagleGround - T.hit), e = smooth(tau); s.pos.set(lerp(hp.x, GR.x, e), lerp(hp.y, GR.y, tau * tau), lerp(hp.z, GR.z, e)); s.yaw = 1.16 + tau * 5; s.pitch = 0.55 + tau * 9 * (1 - tau * 0.6); s.roll = tau * 7 * (1 - tau); s.fold = 0.4; s.flap = 0.7 * (1 - tau); }
+    else if (t < T.eagleGround) { const hp = dive((T.hit - T.takeoff) / (T.impact + 0.8 - T.takeoff), V(0, 0, 0)), tau = (t - T.hit) / (T.eagleGround - T.hit), e = smooth(tau); s.pos.set(lerp(hp.x, GR.x, e), lerp(hp.y, GR.y, tau * tau), lerp(hp.z, GR.z, e)); s.yaw = EY + tau * 5; s.pitch = 0.55 + tau * 9 * (1 - tau * 0.6); s.roll = tau * 7 * (1 - tau); s.fold = 0.4; s.flap = 0.7 * (1 - tau); }
     else if (t < T.eagleUp) { s.pos.copy(GR); s.yaw = 2.6 + 0.4 * Math.sin(t * W(0.5)); s.pitch = -0.1; s.fold = 0.55 + 0.3 * Math.sin(t * W(1.5)); s.head = Math.sin(t * W(3)) * 0.8; s.tumble = 1; }
     else if (t < T.eagleGone) { const k = smooth(win(t, T.eagleUp, T.eagleGone - T.eagleUp)); s.pos.copy(GR).lerp(OUT, k); s.pos.y += 1.6 * Math.sin(Math.min(1, k * 2) * PI / 2) * (1 - k); s.yaw = Math.atan2(OUT.x - GR.x, OUT.z - GR.z); s.pitch = -0.3 * (1 - k); s.fold = 0; s.flap = 1; }
     else if (t < T.eagleBack0) s.vis = false;
-    else if (t < T.eagleBack1) { const k = smooth(win(t, T.eagleBack0, T.eagleBack1 - T.eagleBack0)); s.pos.copy(OUT).lerp(EA, k); s.pos.y += 1.2 * Math.sin(k * PI); s.yaw = Math.atan2(EA.x - OUT.x, EA.z - OUT.z) * (1 - smooth(win(t, T.eagleBack1 - 1.5, 1.5))) + 1.16 * smooth(win(t, T.eagleBack1 - 1.5, 1.5)); s.pitch = 0.1 * (1 - k); s.fold = k > 0.85 ? (k - 0.85) / 0.15 : 0; s.flap = k > 0.85 ? 1 - (k - 0.85) / 0.15 : 1; }
+    else if (t < T.eagleBack1) { const k = smooth(win(t, T.eagleBack0, T.eagleBack1 - T.eagleBack0)); s.pos.copy(OUT).lerp(EA, k); s.pos.y += 1.2 * Math.sin(k * PI); s.yaw = Math.atan2(EA.x - OUT.x, EA.z - OUT.z) * (1 - smooth(win(t, T.eagleBack1 - 1.5, 1.5))) + EY * smooth(win(t, T.eagleBack1 - 1.5, 1.5)); s.pitch = 0.1 * (1 - k); s.fold = k > 0.85 ? (k - 0.85) / 0.15 : 0; s.flap = k > 0.85 ? 1 - (k - 0.85) / 0.15 : 1; }
     return s;
   };
   // ======================================================= the rotten branch: creaks, drops ahead of the eagle, rots into gold dust, regrows
@@ -118,23 +118,23 @@ export function createStage(scene, parts, lights) {
     // the mould: its veins pulse like slow thinking; when someone steps close they flicker red
     const think = bump(t, T.ghostBeetle0, T.ghostBeetle0 + 2, T.land, T.land + 2) + bump(t, T.ghostHit0, T.ghostHit0 + 2, T.impact - 0.5, T.impact + 1.2), wave = 0.5 + 0.5 * Math.sin(t * W(1.0));
     sloth.veinMat.color.set(ap > 0.05 && hash(Math.floor(t * 9)) > 0.4 ? P.fire : P[wave > 0.5 || think > 0.5 ? 'yellow' : 'gold']); sloth.veinMat.opacity = 0.55 + 0.45 * Math.min(1, 0.4 * wave + think + ap);
-    lights.glow.position.set(tmp.x, tmp.y + 0.9, tmp.z + 1.6); lights.glow.intensity = 0.8 * (0.5 + 0.5 * Math.min(1, think + ap * 0.6 + 0.3 * wave));
+    lights.glow.position.set(tmp.x, tmp.y + 0.9, tmp.z + 1.6); lights.glow.intensity = 0.25 * (0.5 + 0.5 * Math.min(1, think + ap * 0.6 + 0.3 * wave));
     // ---- beetle: it is already there in the mould's picture before it exists
     const gv = bump(t, T.ghostBeetle0, T.ghostBeetle0 + 2, T.land - 0.5, T.land + 0.3);
     gBeetle.root.visible = gv > 0.01; gBeetle.root.position.set(TIP.x, TIP.y + 0.08, TIP.z); gBeetle.root.rotation.y = -0.5; ghostMat.opacity = 0.0; gBeetle.root.userData.o = 0.4 * gv * (0.6 + 0.4 * Math.sin(t * W(2)));
     const bVis = t >= T.beetleIn && t < T.snap; beetle.root.visible = bVis;
     if (bVis) { const u = clamp((t - T.beetleIn) / (T.land - T.beetleIn), 0, 1), e = smooth(u); beetle.root.position.set(lerp(BEETLE_FROM.x, TIP.x, e) + 0.4 * Math.sin(u * 12) * (1 - e), lerp(BEETLE_FROM.y, TIP.y + 0.1, e) + 0.35 * Math.sin(u * 9) * (1 - e), lerp(BEETLE_FROM.z, TIP.z, e) + 0.3 * Math.cos(u * 8) * (1 - e)); beetle.root.rotation.y = Math.atan2(TIP.x - BEETLE_FROM.x, TIP.z - BEETLE_FROM.z) * (1 - e) - 0.5 * e; const fl = u < 1 ? Math.sin(t * W(14)) : 0.05 * Math.sin(t * W(1)); beetle.wings[0].rotation.z = 0.9 * fl; beetle.wings[1].rotation.z = -0.9 * fl; }
     // ---- the eagle
-    const es = eagleState(t); eagle.root.visible = es.vis; if (es.vis) { eagle.root.position.copy(es.pos); eagle.root.rotation.set(es.pitch, es.yaw, es.roll, 'YXZ'); eagle.root.scale.setScalar(1.6); eagle.head.rotation.y = es.head * 1.0 * (t < T.takeoff ? 0.0 : 1) + (t < T.takeoff ? Math.sin(t * W(0.15)) * 0.4 * (1 - es.head) : 0); if (t < T.takeoff) eagle.head.rotation.x = 0.1 * es.head + 0.05 * Math.sin(t * W(0.3));
+    const es = eagleState(t); eagle.root.visible = es.vis; if (es.vis) { eagle.root.position.copy(es.pos); eagle.root.rotation.set(es.pitch, es.yaw, es.roll, 'YXZ'); eagle.root.scale.setScalar(1.9); eagle.head.rotation.y = es.head * 1.0 * (t < T.takeoff ? 0.0 : 1) + (t < T.takeoff ? Math.sin(t * W(0.15)) * 0.4 * (1 - es.head) : 0); if (t < T.takeoff) eagle.head.rotation.x = 0.1 * es.head + 0.05 * Math.sin(t * W(0.3));
       const fl = Math.sin(t * W(4.4)); for (let i = 0; i < 2; i++) { const s = i ? 1 : -1; eagle.wings[i].rotation.z = s * (-1.35 * es.fold + 0.9 * es.flap * fl * -1 * (1 - 0.0)); eagle.wings[i].rotation.y = s * 0.3 * es.fold; } eagle.tail.rotation.x = 0.2 * es.fold; for (const l of eagle.legs) l.rotation.x = 0.7 * (t >= T.takeoff && t < T.eagleGround ? 1 : 0); }
     // ---- the rotten branch
     const ps = pieceState(t); PIECE.visible = ps.vis; PIECE.position.copy(ps.pos); PIECE.rotation.set(ps.rot.x, ps.rot.y, ps.rot.z); PIECE.scale.setScalar(ps.scale);
-    const gb = bump(t, T.ghostHit0, T.ghostHit0 + 2.5, T.crack, T.crack + 0.4); gBranch.visible = gb > 0.01; gBranch.position.set(HIT.x + 0.9, HIT.y + 0.1, HIT.z); gBranch.rotation.set(0, -0.12, -0.5); gBranch.userData.o = 0.35 * gb * (0.6 + 0.4 * Math.sin(t * W(2)));
+    const gb = bump(t, T.ghostHit0, T.ghostHit0 + 2.5, T.crack, T.crack + 0.4); gBranch.visible = gb > 0.01; gBranch.position.set(HIT.x - 0.2, HIT.y + 0.05, HIT.z); gBranch.rotation.set(0, -0.12, -0.5); gBranch.userData.o = 0.35 * gb * (0.6 + 0.4 * Math.sin(t * W(2)));
     ghostMat.opacity = Math.max(gBeetle.root.visible ? gBeetle.root.userData.o : 0, gBranch.visible ? gBranch.userData.o : 0);
     // ---- sparkles: the mould's threads to the future, spores, feather bursts
     k = 0;
-    if (gv > 0.05) trail(tmp, V(TIP.x, TIP.y + 0.1, TIP.z), t, 12, 'gold', 0.05 * gv, 0.35);
-    if (gb > 0.05) { trail(tmp, V(HIT.x + 0.9, HIT.y + 0.1, HIT.z), t, 14, 'yellow', 0.05 * gb, 0.3); trail(tmp, V(HIT.x - 0.2, HIT.y - 0.2, HIT.z + 0.3), t + 0.4, 8, 'gold', 0.04 * gb, 0.3); }
+    
+    
     if (ps.glow > 0.02) { const home = PIECE.userData.home; for (let j = 0; j < 40; j++) { const a = nv(7, j), b = nv(9, j), c = nv(13, j), age = (t * 0.6 + b) % 1; put((t < T.regrow0 ? 0.85 : home.x) + (a - 0.5) * 3 * (t < T.regrow0 ? 1 : 1), (t < T.regrow0 ? 0.3 : home.y) + age * 2.4 - (t < T.regrow0 ? 0 : 0), (t < T.regrow0 ? -2.05 : home.z) + (c - 0.5) * 0.6, 0.06 * ps.glow * (1 - age), j % 3 ? 'gold' : 'yellow'); } }
     for (const E of events) { const age = t - E.t0; if (age < 0 || age > E.life) continue; const f = 1 - age / E.life; for (let j = 0; j < E.n; j++) { const a = nv(E.t0, j), b = nv(E.t0 + 9, j), c = nv(E.t0 + 19, j); put(E.o[0] + (a - 0.5) * E.v * 2 * age, Math.max(0.05, E.o[1] + E.up * (0.4 + b) * age - E.g * age * age), E.o[2] + (c - 0.5) * E.v * 2 * age, E.size * (0.4 + b) * f, E.cols[j % E.cols.length]); } }
     for (let i = k; i < NS; i++) { sd.position.set(0, -50, 0); sd.scale.setScalar(0.0001); sd.updateMatrix(); sparks.setMatrixAt(i, sd.matrix); }
