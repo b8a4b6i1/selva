@@ -42,9 +42,9 @@ export function createStage(scene, parts, lights) {
   };
   // ======================================================= the rotten branch: creaks, drops ahead of the eagle, rots into gold dust, regrows
   const pieceState = (t) => {
-    const home = PIECE.userData.home, s = { pos: home.clone(), rot: V(0, -0.12, -0.03), scale: 1, vis: true, glow: 0 };
+    const home = PIECE.userData.home, s = { pos: home.clone(), rot: V(0, 0, 0), scale: 1, vis: true, glow: 0 };
     if (t < T.crack) { const sh = bump(t, T.crack - 1.4, T.crack - 0.1, T.crack - 0.05, T.crack); s.pos.y += 0.02 * Math.sin(t * W(9)) * sh; s.rot.z += 0.012 * Math.sin(t * W(7)) * sh; }
-    else if (t < T.fall) { s.rot.z += -0.05 * smooth((t - T.crack) / (T.fall - T.crack)); s.pos.y -= 0.03; }
+    else if (t < T.fall) { s.rot.z += -0.04 * smooth((t - T.crack) / (T.fall - T.crack)); s.pos.y -= 0.03; }
     else if (t < T.hit) { const d = t - T.fall; s.pos.y = home.y - 0.5 * G * d * d - 0.03; s.rot.z = -0.05 - 0.35 * d; s.pos.x -= 0.03 * d; }
     else if (t < T.impact) { const d = t - T.hit, y0 = home.y - 0.5 * G * (T.hit - T.fall) ** 2 - 0.03; s.pos.y = Math.max(0.22, y0 - 6 * d * d); s.rot.z = -0.05 - 0.35 * (T.hit - T.fall) - 1.3 * d; s.rot.y += 0.4 * d; }
     else if (t < T.rotDust0) { s.pos.y = 0.2 + 0.1 * Math.max(0, Math.sin((t - T.impact) * 14)) * Math.exp(-(t - T.impact) * 3); s.rot.z = 0.1; s.rot.y = 0.45; s.rot.x = 0.05; }
@@ -113,11 +113,11 @@ export function createStage(scene, parts, lights) {
     const eat = bump(t, T.snap - 0.35, T.snap, T.snap + 0.2, T.snap + 0.9), watchBeetle = bump(t, T.beetleIn, T.land, T.snap, T.snap + 1);
     sloth.neck.position.z = 0.5 + 0.25 * eat; sloth.neck.rotation.x = 0.0; sloth.head.rotation.x = -0.1 + 0.15 * eat; sloth.head.rotation.y = 0.12 * Math.sin(t * W(0.2)) * (1 - ap) + 0.7 * ap * 0 + 0.0;
     sloth.head.rotation.z = 0.05 * Math.sin(t * W(0.15)); sloth.jaw.rotation.x = 0.5 * eat + 0.12 * Math.max(0, Math.sin(t * W(0.35)));
-    const front = sloth.arms[1]; front.sh.rotation.x = -1.2 * eat; front.el.rotation.x = PI - 0.9 * eat;
+    const front = sloth.arms[1]; front.sh.rotation.x = -0.9 * eat; front.el.rotation.x = 0;
     sloth.root.scale.set(1.3, 1.3, 1.3 * (1 + 0.01 * Math.sin(t * W(0.33))));
     // the mould: its veins pulse like slow thinking; when someone steps close they flicker red
     const think = bump(t, T.ghostBeetle0, T.ghostBeetle0 + 2, T.land, T.land + 2) + bump(t, T.ghostHit0, T.ghostHit0 + 2, T.impact - 0.5, T.impact + 1.2), wave = 0.5 + 0.5 * Math.sin(t * W(1.0));
-    sloth.veinMat.color.set(ap > 0.05 && hash(Math.floor(t * 9)) > 0.4 ? P.fire : P[wave > 0.5 || think > 0.5 ? 'yellow' : 'gold']); sloth.veinMat.opacity = 0.55 + 0.45 * Math.min(1, 0.4 * wave + think + ap);
+    sloth.setGlow(ap > 0.05 && hash(Math.floor(t * 9)) > 0.4 ? P.fire : P.gold, ap > 0.05 ? 0.35 : 0.04 + 0.1 * Math.min(1, 0.4 * wave + think));
     lights.glow.position.set(tmp.x, tmp.y + 0.9, tmp.z + 1.6); lights.glow.intensity = 0.25 * (0.5 + 0.5 * Math.min(1, think + ap * 0.6 + 0.3 * wave));
     // ---- beetle: it is already there in the mould's picture before it exists
     const gv = bump(t, T.ghostBeetle0, T.ghostBeetle0 + 2, T.land - 0.5, T.land + 0.3);

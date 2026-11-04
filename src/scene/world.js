@@ -37,11 +37,11 @@ export function buildWorld(scene) {
   { const segs = [[BX0, 1.6, 0.26, 0.21], [1.6, 3.6, 0.21, 0.17], [3.6, TIP, 0.17, 0.1]]; for (const [a, b, r0, r1] of segs) { cyl(world, r1, r0, b - a + 0.04, M('wood3'), (a + b) / 2, BY, BZ, [0, 0, Math.PI / 2], 8); }
   }       // a thin side twig
   // the rotten branch (it will break): a stub stays, the long piece is a group the stage moves
-  { const stub = new THREE.Group(); stub.position.set(KX + 0.55, 5.7, KZ - 0.35); world.add(stub); cyl(stub, 0.15, 0.2, 2.2, M('wood5'), 1.1, 0, 0, [0, 0, Math.PI / 2], 7); cone(stub, 0.1, 0.22, M('wood5'), 2.3, 0, 0, [0, 0, -Math.PI / 2], 5);
-    const piece = new THREE.Group(); world.add(piece); parts.rotten = piece; cyl(piece, 0.13, 0.17, 3.2, M('wood5'), 0, 0, 0, [0, 0, Math.PI / 2], 7);
+  { const stub = new THREE.Group(); stub.position.set(KX + 0.55, 5.7, KZ - 0.55); world.add(stub); cyl(stub, 0.17, 0.22, 2.4, M('wood5'), 1.2, 0, 0, [0, 0, Math.PI / 2], 7);
+    const piece = new THREE.Group(); world.add(piece); parts.rotten = piece; cyl(piece, 0.13, 0.17, 3.2, M('wood5'), 0, 0, 0, [0, 0, Math.PI / 2], 7); sph(piece, 0.17, M('wood5'), -1.6, 0, 0, [0.4, 1, 1], 7, 5);
     for (let i = 0; i < 2; i++) { cyl(piece, 0.16, 0.16, 0.05, M('cream'), -0.6 + i * 1.5, 0.1, 0.12, [0.6, 0, 0], 8); }                       // shelf fungus
     
-    piece.userData.home = new THREE.Vector3(KX + 4.5, 5.7, KZ - 0.55); piece.position.copy(piece.userData.home); piece.rotation.set(0, -0.12, -0.03); }
+    piece.userData.home = new THREE.Vector3(KX + 0.55 + 2.4 + 1.6, 5.7, KZ - 0.55); piece.position.copy(piece.userData.home); piece.rotation.set(0, 0, 0); }
   // the eagle's tree: tall, at the back left
   trunk(-8.0, -5.2, 0.7, 0.4, 9.6, 'wood4'); beam(world, [-7.6, 7.7, -5.2], [-6.0, 7.9, -5.2], 0.2, M('wood3')); beam(world, [-6.0, 7.9, -5.2], [-5.4, 8.3, -5.0], 0.12, M('wood3')); parts.perch = new THREE.Vector3(-6.8, 7.95, -5.2); beam(world, [7.2, 7.15, -4.6], [5.9, 7.4, -4.6], 0.18, M('wood3')); beam(world, [5.9, 7.4, -4.6], [5.3, 7.8, -4.4], 0.1, M('wood3')); parts.perch = new THREE.Vector3(6.3, 7.45, -4.6); R(-8.9, -7.1, -6.1, -4.3);
   // slimmer trunks and palms

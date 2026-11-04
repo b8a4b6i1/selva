@@ -209,25 +209,32 @@ export function makeLetter() { const g = new THREE.Group(); box(g, 0.26, 0.015, 
 
 // ======================================================= LA SELVA DEL PEREZOSO
 const SLK = { fur: 'wood1', fur2: 'grey1', back: 'wood4', face: 'cream' };
-/** Three-toed sloth hanging by four hooked claws under a branch, belly toward the branch. Faces +z. The mould's gold veins are a separate, animated material. */
+/** Three-toed sloth hanging by four limbs under a branch, belly toward the branch. Faces +z.
+ *  The algae, the mould and the fur patches are all colour painted on the body (vertex colours): nothing is attached to the animal. */
 export function makeSloth() {
   const root = new THREE.Group(), g = J(root, 0, 0, 0);
-  // fur in distinct patches: a grey rump, a brown middle, golden shoulders and a tan chest, with a dark dorsal stripe and a few flat algae patches
-  for (const [z, c, r] of [[-0.4, 'grey1', 0.26], [-0.14, 'wood2', 0.3], [0.13, 'mustard', 0.3], [0.38, 'wood1', 0.27]]) sph(g, r, M(c), 0, 0, z, [1, 0.84, 0.95], 11, 8);
-  sph(g, 0.2, M('wood5'), 0, -0.17, -0.02, [0.9, 0.5, 2.3], 9, 6);
-  for (const [x, y, z] of [[-0.2, -0.12, -0.3], [0.2, -0.14, 0.05], [-0.18, -0.1, 0.3]]) sph(g, 0.07, M('lime'), x, y, z, [1.3, 0.45, 1.4], 6, 4);
-  const veinMat = new THREE.MeshBasicMaterial({ color: P.gold, transparent: true, opacity: 0.95 }); const veins = new THREE.Group(); g.add(veins);
-  const vein = (x0, y0, z0, x1, y1, z1) => { const A = new THREE.Vector3(x0, y0, z0), B = new THREE.Vector3(x1, y1, z1), len = A.distanceTo(B), m = new THREE.Mesh(new THREE.BoxGeometry(0.022, len, 0.022), veinMat); m.position.copy(A).add(B).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize()); veins.add(m); };
-  for (const s of [-1, 1]) { vein(s * 0.3, -0.05, -0.3, s * 0.31, -0.1, 0.0); vein(s * 0.31, -0.1, 0.0, s * 0.28, -0.04, 0.35); vein(s * 0.31, -0.1, 0.0, s * 0.3, -0.25, 0.12); vein(s * 0.3, -0.05, -0.3, s * 0.27, -0.2, -0.5); vein(s * 0.28, -0.04, 0.35, s * 0.2, -0.2, 0.5); vein(s * 0.3, -0.25, 0.12, s * 0.22, -0.32, 0.3); }
-  vein(0, -0.34, -0.45, 0, -0.38, -0.05); vein(0, -0.38, -0.05, 0, -0.3, 0.4); vein(0, -0.38, -0.05, 0.1, -0.42, 0.1); vein(0, -0.38, -0.05, -0.1, -0.42, 0.15);
+  const geo = new THREE.SphereGeometry(1, 44, 30); geo.scale(0.31, 0.27, 0.66);
+  const pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cc = new THREE.Color();
+  const zone = (z) => (z < -0.3 ? 'grey1' : z < -0.02 ? 'wood2' : z < 0.28 ? 'mustard' : 'wood1');
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i); let c = zone(z + 0.04 * Math.sin(x * 20 + y * 11));
+    const q = Math.sin(3.1 * x + 7.3 * z) * Math.cos(9.7 * y + 4.1 * z) + 0.6 * Math.sin(12 * x - 6.1 * y + 3.3 * z);
+    if (y < -0.15 && Math.abs(x) < 0.13) c = 'wood5';                                                       // dark dorsal stripe
+    else if (q > 0.85) c = Math.sin(31 * z + 9 * x) > 0 ? 'green2' : 'lime';                              // algae, painted on
+    else if (Math.abs(Math.sin(15 * x + 8 * y + 11 * z) * Math.cos(9 * z - 6 * y)) < 0.055) c = 'gold';   // the mould's network, painted on
+    cc.set(P[c]); colors[i * 3] = cc.r; colors[i * 3 + 1] = cc.g; colors[i * 3 + 2] = cc.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, emissive: new THREE.Color(P.gold), emissiveIntensity: 0 });
+  const body = new THREE.Mesh(geo, furMat); body.castShadow = true; body.receiveShadow = true; g.add(body);
   // head: face upright (the sloth turns its head half round), pale mask with dark eye stripes
-  const neck = J(g, 0, 0.0, 0.5), head = J(neck, 0, 0.05, 0.12); sph(head, 0.16, M(SLK.fur), 0, 0, 0, [1.05, 1, 0.95], 10, 8); sph(head, 0.13, M(SLK.face), 0, -0.01, 0.07, [1.1, 0.95, 0.8], 10, 8);
+  const neck = J(g, 0, 0.0, 0.52), head = J(neck, 0, 0.05, 0.12); sph(head, 0.16, M('wood1'), 0, 0, 0, [1.05, 1, 0.95], 10, 8); sph(head, 0.13, M(SLK.face), 0, -0.01, 0.07, [1.1, 0.95, 0.8], 10, 8);
   for (const s of [-1, 1]) { box(head, 0.05, 0.12, 0.03, M('ink'), s * 0.065, 0.01, 0.15, [0, 0, s * 0.45]); sph(head, 0.018, M('black'), s * 0.055, 0.02, 0.165, [1, 1, 0.5], 5, 4); } sph(head, 0.03, M('ink'), 0, -0.04, 0.18, [1.3, 1, 0.8], 5, 4); box(head, 0.1, 0.012, 0.02, M('wood4'), 0, -0.085, 0.16, [0, 0, 0.05]);
   const jaw = J(head, 0, -0.08, 0.1); box(jaw, 0.08, 0.016, 0.06, M('wood3'), 0, 0, 0.03);
-  // four limbs reaching up to the branch (y +0.5 above the body); claws hook over it
-  const arms = [[-0.23, 0.32], [0.23, 0.32], [-0.23, -0.34], [0.23, -0.34]].map(([x, z], i) => { const sh = J(g, x, 0.22, z), el = J(sh, 0, 0.0, 0); limb(el, 0.22, 0.055, M(i < 2 ? 'mustard' : 'wood2')); el.rotation.x = Math.PI; sh.position.y = 0.22; const wr = J(el, 0, -0.22, 0); for (const c of [-1, 0, 1]) { box(wr, 0.02, 0.09, 0.02, M('wood5'), c * 0.035, -0.03, 0, [0, 0, -c * 0.12]); } void i; return { sh, el, wr }; });
-  const shadow = contactShadow(0.4); shadow.visible = false; root.add(shadow);
-  return { root, g, neck, head, jaw, arms, veins, veinMat };
+  // four short thick limbs from the body up to the branch, in the fur colour of their zone; a small dark pad where each grips (no claws sticking out)
+  const limbCol = ['wood2', 'wood2', 'grey1', 'grey1'];
+  const arms = [[-0.24, 0.3], [0.24, 0.3], [-0.24, -0.38], [0.24, -0.38]].map(([x, z], i) => { const sh = J(g, x, 0.2, z), el = J(sh, 0, 0.0, 0); const m = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.085, 0.24, 8), M(i < 2 ? 'mustard' : limbCol[i])); m.position.y = 0.12; m.castShadow = true; el.add(m); const wr = J(el, 0, 0.25, 0); sph(wr, 0.06, M('wood5'), 0, 0, 0, [1.1, 0.7, 1.1], 7, 5); return { sh, el, wr }; });
+  return { root, g, neck, head, jaw, arms, furMat, setGlow(color, k) { furMat.emissive.set(color); furMat.emissiveIntensity = k; } };
 }
 function hash2(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
 /** Harpy eagle: grey back, white chest with a black band, split crest, huge talons. Faces +z. */
